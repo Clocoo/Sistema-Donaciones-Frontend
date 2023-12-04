@@ -76,16 +76,26 @@ function parseJwt(token) {
 
 async function onSuccess(googleUser) {
   try {
-    const response = await axios.post('https://localhost:4001/authenticate', {
-      token: googleUser.credential,
+    const response = await fetch('https://localhost:4001/authenticate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token: googleUser.credential,
+      }),
     });
 
-    const jwtToken = response.data.jwtToken;
+    if (!response.ok) {
+      throw new Error(`Error al autenticar con el backend: ${response.status}`);
+    }
+
+    const result = await response.json();
+    const jwtToken = result.jwtToken;
     console.log("Token recibido del backend:", jwtToken);
 
     // Almacena el token en localStorage
     localStorage.setItem('jwtToken', jwtToken);
-    //console.log("key guardada: ", localStorage.getItem("jwtToken"));
 
     // Verifica si se recibió un token y redirige al usuario
     if (jwtToken) {
@@ -101,6 +111,7 @@ async function onSuccess(googleUser) {
     alert('Correo inválido, ingrese un correo de la institución UABC.');
   }
 }
+
 </script>
 
 <style>
